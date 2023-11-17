@@ -8,6 +8,7 @@
 #include <variant>
 #include <limits>
 #include <sstream>
+#include <fstream>
 
 #define HeapNode tuple<int, double, int>
 #define WAIT_LIST_MAX_SIZE 20
@@ -961,20 +962,31 @@ public:
     }
 };
 
-int main()
-{
-    int n;
-    cin >> n;
-    cin.get();
-
-    vector<string> operations(n);
-
-    for (int i = 0; i < n; i++) {
-        string s;
-        getline(cin, s);
-        operations[i] = s;
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        cerr << "Usage: ./gatorLibrary <file_name>" << endl;
+        return 1;
     }
 
-    GatorLibrary lib;
-    lib.ExecuteOperations(operations);
+    string inputFileName = argv[1];
+    ifstream inputFile(inputFileName);
+    ofstream outputFile(inputFileName + "_output_file.txt");
+
+    if (!inputFile.is_open() || !outputFile.is_open()) {
+        cerr << "Error opening files." << endl;
+        return 1;
+    }
+
+    GatorLibrary library;
+
+    string command;
+    vector<string> operations;
+
+    while (std::getline(inputFile, command)) {
+        operations.push_back(command);
+    }
+
+    library.ExecuteOperations(operations);
+
+    return 0;
 }
