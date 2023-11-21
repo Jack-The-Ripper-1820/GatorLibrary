@@ -1,6 +1,3 @@
-// GatorLib.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <string>
 #include <ctime>
@@ -12,8 +9,6 @@
 #include <tuple>
 #include <variant>
 #include <chrono>
-
-
 
 #define HeapNode tuple<int, double, int>
 #define WAIT_LIST_MAX_SIZE 20
@@ -43,20 +38,20 @@ public:
         return BookID;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const BookNode& obj) {
+    friend ostream& operator<<(ostream& os, const BookNode& obj) {
         auto pq = obj.ReservationHeap;
 
-        os << "BookID = " << obj.BookID << std::endl;
-        os << "Title = \"" << obj.BookName << "\"" << std::endl;
-        os << "Author = \"" << obj.AuthorName << "\"" << std::endl;
-        os << "Availability = \"" << obj.AvailabilityStatus << "\"" << std::endl;
-        std::variant<int, std::string> borrowedBy = obj.BorrowedBy == -1 ? std::variant<int, std::string>("None") : std::variant<int, std::string>(obj.BorrowedBy);
+        os << "BookID = " << obj.BookID << endl;
+        os << "Title = \"" << obj.BookName << "\"" << endl;
+        os << "Author = \"" << obj.AuthorName << "\"" << endl;
+        os << "Availability = \"" << obj.AvailabilityStatus << "\"" << endl;
+        variant<int, string> borrowedBy = obj.BorrowedBy == -1 ? variant<int, string>("None") : variant<int, string>(obj.BorrowedBy);
 
-        if (std::holds_alternative<int>(borrowedBy)) {
-            os << "BorrowedBy = " << std::get<int>(borrowedBy) << std::endl;
+        if (holds_alternative<int>(borrowedBy)) {
+            os << "BorrowedBy = " << get<int>(borrowedBy) << endl;
         }
-        else if (std::holds_alternative<std::string>(borrowedBy)) {
-            os << "BorrowedBy = " << std::get<std::string>(borrowedBy) << std::endl;
+        else if (holds_alternative<string>(borrowedBy)) {
+            os << "BorrowedBy = " << get<string>(borrowedBy) << endl;
         }
 
         os << "Reservations = [";
@@ -68,7 +63,7 @@ public:
             if(!pq.empty()) os << ", ";
         }
 
-        os << "]" << std::endl;
+        os << "]" << endl;
 
         return os;
     }
@@ -93,17 +88,17 @@ public:
 };
 class RBTreeNode {
 public:
-    BookNode data;
+    BookNode bookData;
     RBTreeNode * parent, * left, * right;
     int color;
 
-    RBTreeNode() : data(), parent(nullptr), left(nullptr), right(nullptr), color(0) {
+    RBTreeNode() : bookData(), parent(nullptr), left(nullptr), right(nullptr), color(0) {
     
     }
 
     RBTreeNode(int bookID, string bookName, string authorName, string availabilityStatus, int borrowedBy, int color = 0) 
         :  RBTreeNode() {
-        data = BookNode(bookID, bookName, authorName, availabilityStatus, borrowedBy);
+        bookData = BookNode(bookID, bookName, authorName, availabilityStatus, borrowedBy);
         this->color = color;
     }
 
@@ -114,197 +109,164 @@ public:
 
 class RBTree {
 private:
-    RBTreeNode* root;
-    RBTreeNode* null;
+    RBTreeNode *root, *null;
 
-    /*void initNullNode(RBTreeNode* node, RBTreeNode* parent) {
-        node = new RBTreeNode(0);
-        node->parent = parent;
-    }*/
-
-    /*void printPreOrder(RBTreeNode* node) {
-        if (node != null) {
-            cout << node->data << endl;
-            printPreOrder(node->left);
-            printPreOrder(node->right);
-        }
-    }*/
-
-    /*void printInOrder(RBTreeNode* node) {
-        if (node != null) {
-            printInOrder(node->left);
-            cout << node->data << endl;
-            printInOrder(node->right);
-        }
-    }*/
-
-    /*void printPostOrder(RBTreeNode* node) {
-        if (node != null) {
-            printPostOrder(node->left);
-            printPostOrder(node->right);
-            cout << node->data << endl;
-        }
-    }*/
-
-    RBTreeNode* searchTreeHelper(RBTreeNode* node, int key) {
-        if (node == null || key == node->data.getKey()) {
+    RBTreeNode* _search(RBTreeNode* node, int key) {
+        if (node == null || key == node->bookData.getKey()) {
             return node;
         }
 
-        if (key < node->data.getKey()) {
-            return searchTreeHelper(node->left, key);
+        if (key < node->bookData.getKey()) {
+            return _search(node->left, key);
         }
-        return searchTreeHelper(node->right, key);
+
+        return _search(node->right, key);
     }
 
-    void findClosestTraverse(vector<RBTreeNode*>& arr, RBTreeNode* root, const int& key, int& minDiff) {
+    void _findClosestTraverse(vector<RBTreeNode*>& arr, RBTreeNode* root, const int& key, int& minDiff) {
         if (root == nullptr || root == null) {
             return;
         }
 
-       //if (abs(root->data.getKey() - key) > minDiff) return;
-
-        if (abs(root->data.getKey() - key) < minDiff) {
+        if (abs(root->bookData.getKey() - key) < minDiff) {
             arr.clear();
             arr.push_back(root);
-            minDiff = abs(root->data.getKey() - key);
+            minDiff = abs(root->bookData.getKey() - key);
         }
 
-        else if (abs(root->data.getKey() - key) == minDiff) {
+        else if (abs(root->bookData.getKey() - key) == minDiff) {
             arr.push_back(root);
-            minDiff = abs(root->data.getKey() - key);
+            minDiff = abs(root->bookData.getKey() - key);
         }
 
-        findClosestTraverse(arr, root->left, key, minDiff);
-        findClosestTraverse(arr, root->right, key, minDiff);
+        _findClosestTraverse(arr, root->left, key, minDiff);
+        _findClosestTraverse(arr, root->right, key, minDiff);
     }
 
-    vector<RBTreeNode*> findClosestHelper(RBTreeNode* root, int key) {
-        RBTreeNode* equalNode = searchTreeHelper(root, key);
+    vector<RBTreeNode*> _findClosest(RBTreeNode* root, int key) {
+        RBTreeNode* equalNode = _search(root, key);
         
-        if (equalNode->data.getKey() == key) {
+        if (equalNode->bookData.getKey() == key) {
             return { equalNode };
         }
 
         vector<RBTreeNode*> arr;
         int minDiff = MAX_INT;
 
-        findClosestTraverse(arr, root, key, minDiff);
+        _findClosestTraverse(arr, root, key, minDiff);
 
         sort(arr.begin(), arr.end(), [](const RBTreeNode* a, const RBTreeNode* b) {
-            return a->data < b->data;
+            return a->bookData < b->bookData;
         });
 
         return arr;
     }
 
-    void assignColor(RBTreeNode* cur, int newColor) {
+    void _assignColor(RBTreeNode* cur, int newColor) {
         if (cur->color != newColor) colorFlipCount++;
         cur->color = newColor;
     }
 
-    void deleteFix(RBTreeNode* x) {
-        RBTreeNode* s;
-        while (x != root && x->color == 0) {
-            if (x == x->parent->left) {
-                s = x->parent->right;
-                if (s->color == 1) {
-                    //s->color = 0;
-                    assignColor(s, 0);
-                    //x->parent->color = 1;
-                    assignColor(x->parent, 1);
-                    leftRotate(x->parent);
-                    s = x->parent->right;
-                }
-
-                if (s->left->color == 0 && s->right->color == 0) {
-                    //s->color = 1;
-                    assignColor(s, 1);
-                    x = x->parent;
-                }
-                else {
-                    if (s->right->color == 0) {
-                        //s->left->color = 0;
-                        assignColor(s->left, 0);
-                        //s->color = 1;
-                        assignColor(s, 1);
-                        rightRotate(s);
-                        s = x->parent->right;
-                    }
-
-                    //s->color = x->parent->color;
-                    assignColor(s, x->parent->color);
-                    //x->parent->color = 0;
-                    assignColor(x->parent, 0);
-                    //s->right->color = 0;
-                    assignColor(s->right, 0);
-                    leftRotate(x->parent);
-                    x = root;
-                }
-            }
-            else {
-                s = x->parent->left;
-                if (s->color == 1) {
-                    //s->color = 0;
-                    assignColor(s, 0);
-                    //x->parent->color = 1;
-                    assignColor(x->parent, 1);
-                    rightRotate(x->parent);
-                    s = x->parent->left;
-                }
-
-                if (s->right->color == 0) {
-                    //s->color = 1;
-                    assignColor(s, 1);
-                    x = x->parent;
-                }
-                else {
-                    if (s->left->color == 0) {
-                        //s->right->color = 0;
-                        assignColor(s->right, 0);
-                        //s->color = 1;
-                        assignColor(s, 1);
-                        leftRotate(s);
-                        s = x->parent->left;
-                    }
-
-                    //s->color = x->parent->color;
-                    assignColor(s, x->parent->color);
-                    //x->parent->color = 0;
-                    assignColor(x->parent, 0);
-                    //s->left->color = 0;
-                    assignColor(s->left, 0);
-                    rightRotate(x->parent);
-                    x = root;
-                }
-            }
+    void _transplantRedBlack(RBTreeNode* a, RBTreeNode* b) {
+        if (a->parent == nullptr) {
+            root = b;
         }
-        //x->color = 0;
-        assignColor(x, 0);
-    }
 
-    void rbTransplant(RBTreeNode* u, RBTreeNode* v) {
-        if (u->parent == nullptr) {
-            root = v;
-        }
-        else if (u == u->parent->left) {
-            u->parent->left = v;
+        else if (a == a->parent->left) {
+            a->parent->left = b;
         }
         else {
-            u->parent->right = v;
+            a->parent->right = b;
         }
-        v->parent = u->parent;
+
+        b->parent = a->parent;
     }
 
-    void deleteNodeHelper(RBTreeNode* node, int key) {
-        RBTreeNode* z = null;
-        RBTreeNode *x, *y;
-        while (node != null) {
-            if (node->data.getKey() == key) {
-                z = node;
+    void _balanceDelete(RBTreeNode* cur) {
+        RBTreeNode* p;
+        while (cur != root && cur->color == 0) {
+            if (cur == cur->parent->left) {
+                p = cur->parent->right;
+
+                if (p->color == 1) {
+                    _assignColor(p, 0);
+                    _assignColor(cur->parent, 1);
+                    rotateLeft(cur->parent);
+
+                    p = cur->parent->right;
+                }
+
+                if (p->left->color == 0 && p->right->color == 0) {
+                    _assignColor(p, 1);
+                    cur = cur->parent;
+                }
+
+                else {
+                    if (p->right->color == 0) {
+                        _assignColor(p->left, 0);
+                        _assignColor(p, 1);
+                        rotateRight(p);
+
+                        p = cur->parent->right;
+                    }
+
+                    _assignColor(p, cur->parent->color);
+                    _assignColor(cur->parent, 0);
+                    _assignColor(p->right, 0);
+                    rotateLeft(cur->parent);
+
+                    cur = root;
+                }
             }
 
-            if (node->data.getKey() <= key) {
+            else {
+                p = cur->parent->left;
+
+                if (p->color == 1) {
+                    _assignColor(p, 0);
+                    _assignColor(cur->parent, 1);
+                    rotateRight(cur->parent);
+
+                    p = cur->parent->left;
+                }
+
+                if (p->right->color == 0) {
+                    _assignColor(p, 1);
+
+                    cur = cur->parent;
+                }
+
+                else {
+                    if (p->left->color == 0) {
+                        _assignColor(p->right, 0);
+                        _assignColor(p, 1);
+                        rotateLeft(p);
+
+                        p = cur->parent->left;
+                    }
+
+                    _assignColor(p, cur->parent->color);
+                    _assignColor(cur->parent, 0);
+                    _assignColor(p->left, 0);
+                    rotateRight(cur->parent);
+
+                    cur = root;
+                }
+            }
+        }
+
+        _assignColor(cur, 0);
+    }
+
+    void _nodeDelete(RBTreeNode* node, int key) {
+        RBTreeNode *delNode = null, *a, *b;
+
+        while (node != null) {
+            if (node->bookData.getKey() == key) {
+                delNode = node;
+            }
+
+            if (node->bookData.getKey() <= key) {
                 node = node->right;
             }
             else {
@@ -312,128 +274,111 @@ private:
             }
         }
 
-        if (z == null) {
-            cout << "Key not found in the tree" << endl;
+        if (delNode == null) {
+            cout << "node doesn't exist" << endl;
             return;
         }
 
-        y = z;
-        int y_original_color = y->color;
-        if (z->left == null) {
-            x = z->right;
-            rbTransplant(z, z->right);
+        b = delNode;
+        int b_original_color = b->color;
+
+        if (delNode->left == null) {
+            a = delNode->right;
+            _transplantRedBlack(delNode, delNode->right);
         }
-        else if (z->right == null) {
-            x = z->left;
-            rbTransplant(z, z->left);
+
+        else if (delNode->right == null) {
+            a = delNode->left;
+            _transplantRedBlack(delNode, delNode->left);
         }
+
         else {
-            y = minimum(z->right);
-            y_original_color = y->color;
-            x = y->right;
-            if (y->parent == z) {
-                x->parent = y;
-            }
-            else {
-                rbTransplant(y, y->right);
-                y->right = z->right;
-                if(y->right) y->right->parent = y;
+            b = findMin(delNode->right);
+            b_original_color = b->color;
+            a = b->right;
+
+            if (b->parent == delNode) {
+                a->parent = b;
             }
 
-            rbTransplant(z, y);
-            y->left = z->left;
-            if(y->left) y->left->parent = y;
-            //y->color = z->color;
-            assignColor(y, z->color);
+            else {
+                _transplantRedBlack(b, b->right);
+                b->right = delNode->right;
+                if(b->right) b->right->parent = b;
+            }
+
+            _transplantRedBlack(delNode, b);
+            b->left = delNode->left;
+            if(b->left) b->left->parent = b;
+            _assignColor(b, delNode->color);
         }
 
-        delete z;
+        delete delNode;
         
-        if (y_original_color == 0) {
-            deleteFix(x);
+        if (b_original_color == 0) {
+            _balanceDelete(a);
         }
     }
 
-    void insertFix(RBTreeNode* k) {
-        RBTreeNode *u;
-        while (k->parent->color == 1) {
-            if (k->parent == k->parent->parent->right) {
-                u = k->parent->parent->left;
-                if (u->color == 1) {
-                    //u->color = 0;
-                    assignColor(u, 0);
-                    //k->parent->color = 0;
-                    assignColor(k->parent, 0);
-                    //k->parent->parent->color = 1;
-                    assignColor(k->parent->parent, 1);
-                    k = k->parent->parent;
-                }
-                else {
-                    if (k == k->parent->left) {
-                        k = k->parent;
-                        rightRotate(k);
-                    }
-                    //k->parent->color = 0;
-                    assignColor(k->parent, 0);
-                    //k->parent->parent->color = 1;
-                    assignColor(k->parent->parent, 1);
-                    leftRotate(k->parent->parent);
-                }
-            }
-            else {
-                u = k->parent->parent->right;
+    void _balanceInsert(RBTreeNode* cur) {
+        RBTreeNode *a;
 
-                if (u->color == 1) {
-                    //u->color = 0;
-                    assignColor(u, 0);
-                    //k->parent->color = 0;
-                    assignColor(k->parent, 0);
-                    //k->parent->parent->color = 1;
-                    assignColor(k->parent->parent, 1);
-                    k = k->parent->parent;
+        while (cur->parent->color == 1) {
+
+            if (cur->parent == cur->parent->parent->right) {
+                a = cur->parent->parent->left;
+
+                if (a->color == 1) {
+                    _assignColor(a, 0);
+                    _assignColor(cur->parent, 0);
+                    _assignColor(cur->parent->parent, 1);
+                    cur = cur->parent->parent;
                 }
+
                 else {
-                    if (k == k->parent->right) {
-                        k = k->parent;
-                        leftRotate(k);
+                    if (cur == cur->parent->left) {
+                        cur = cur->parent;
+                        rotateRight(cur);
                     }
-                    //k->parent->color = 0;
-                    assignColor(k->parent, 0);
-                    //k->parent->parent->color = 1;
-                    assignColor(k->parent->parent, 1);
-                    rightRotate(k->parent->parent);
+
+                    _assignColor(cur->parent, 0);
+                    _assignColor(cur->parent->parent, 1);
+                    rotateLeft(cur->parent->parent);
                 }
             }
-            if (k == root) {
+
+            else {
+                a = cur->parent->parent->right;
+
+                if (a->color == 1) {
+                    _assignColor(a, 0);
+                    _assignColor(cur->parent, 0);
+                    _assignColor(cur->parent->parent, 1);
+                    cur = cur->parent->parent;
+                }
+
+                else {
+                    if (cur == cur->parent->right) {
+                        cur = cur->parent;
+                        rotateLeft(cur);
+                    }
+
+                    _assignColor(cur->parent, 0);
+                    _assignColor(cur->parent->parent, 1);
+                    rotateRight(cur->parent->parent);
+                }
+            }
+
+            if (cur == root) {
                 break;
             }
         }
-        //root->color = 0;
-        assignColor(root, 0);
+        _assignColor(root, 0);
     }
-
-    /*void print(RBTreeNode* root, string indent, bool last) {
-        if (root != null) {
-            cout << indent;
-            if (last) {
-                cout << "R----";
-                indent += "   ";
-            }
-            else {
-                cout << "L----";
-                indent += "|  ";
-            }
-
-            string sColor = root->color ? "RED" : "BLACK";
-            cout << root->data << "(" << sColor << ")" << endl;
-            print(root->left, indent, false);
-            print(root->right, indent, true);
-        }
-    }*/
 
 
 public:
-    int colorFlipCount;
+    int colorFlipCount = 0;
 
     RBTree() : null(new RBTreeNode(0)), colorFlipCount(0) {
         root = null;
@@ -453,149 +398,67 @@ public:
         delete null;
     }
 
-    /*void preorder() {
-        printPreOrder(this->root);
-    }*/
+    RBTreeNode* getRoot() const {
+        return this->root;
+    }
 
-    /*void inorder() {
-        printInOrder(this->root);
-    }*/
+    RBTreeNode* getNull() const {
+        return this->null;
+    }
 
-    /*void postorder() {
-        printPostOrder(this->root);
-    }*/
-
-    /*void preorder(RBTreeNode* root) {
-        printPreOrder(root);
-    }*/
-
-    /*void inorder(RBTreeNode* root) {
-        printInOrder(root);
-    }*/
-
-    /*void postorder(RBTreeNode* root) {
-        printPostOrder(root);
-    }*/
-
-    RBTreeNode* searchTree(int key) {
-        return searchTreeHelper(root, key);
+    RBTreeNode* search(int key) {
+        return _search(root, key);
     }
 
     vector<RBTreeNode*> findClosest(int key) {
-        return findClosestHelper(root, key);
+        return _findClosest(root, key);
     }
 
-    RBTreeNode* minimum(RBTreeNode* node) {
-        while (node->left != null) {
-            node = node->left;
-        }
+    RBTreeNode* findMax(RBTreeNode* node) {
+        for (; node->right != null; node = node->right);
         return node;
     }
 
-    RBTreeNode* maximum(RBTreeNode* node) {
-        while (node->right != null) {
-            node = node->right;
-        }
+    RBTreeNode* findMin(RBTreeNode* node) {
+        for (; node->left != null; node = node->left);
         return node;
     }
 
-    RBTreeNode* successor(RBTreeNode* x) {
-        if (x->right != null) {
-            return minimum(x->right);
-        }
-
-        RBTreeNode* y = x->parent;
-        while (y != null && x == y->right) {
-            x = y;
-            y = y->parent;
-        }
-        return y;
-    }
-
-    RBTreeNode* predecessor(RBTreeNode* x) {
-        if (x->left != null) {
-            return maximum(x->left);
-        }
-
-        RBTreeNode* y = x->parent;
-        while (y != null && x == y->left) {
-            x = y;
-            y = y->parent;
-        }
-
-        return y;
-    }
-
-    void leftRotate(RBTreeNode* x) {
-        RBTreeNode* y = x->right;
-        x->right = y->left;
-        if (y->left != null) {
-            y->left->parent = x;
-        }
-        y->parent = x->parent;
-        if (x->parent == nullptr) {
-            this->root = y;
-        }
-        else if (x == x->parent->left) {
-            x->parent->left = y;
-        }
-        else {
-            x->parent->right = y;
-        }
-        y->left = x;
-        x->parent = y;
-    }
-
-    void rightRotate(RBTreeNode* x) {
-        RBTreeNode* y = x->left;
-        x->left = y->right;
-        if (y->right != null) {
-            y->right->parent = x;
-        }
-        y->parent = x->parent;
-        if (x->parent == nullptr) {
-            this->root = y;
-        }
-        else if (x == x->parent->right) {
-            x->parent->right = y;
-        }
-        else {
-            x->parent->left = y;
-        }
-        y->right = x;
-        x->parent = y;
-    }
-
-    void insert(const BookNode& data) {
+    void insert(const BookNode& bookData) {
         RBTreeNode* node = new RBTreeNode();
+
         node->parent = nullptr;
-        node->data = data;
+        node->bookData = bookData;
         node->left = null;
         node->right = null;
         node->color = 1;
 
-        RBTreeNode* y = nullptr;
-        RBTreeNode* x = this->root;
+        RBTreeNode *b = nullptr, *a = this->root;
 
-        while (x != null) {
-            y = x;
-            if (node->data < x->data) {
-                x = x->left;
+        while (a != null) {
+            b = a;
+
+            if (node->bookData < a->bookData) {
+                a = a->left;
             }
+
             else {
-                x = x->right;
+                a = a->right;
             }
         }
 
-        node->parent = y;
-        if (y == nullptr) {
+        node->parent = b;
+
+        if (b == nullptr) {
             root = node;
         }
-        else if (node->data < y->data) {
-            y->left = node;
+
+        else if (node->bookData < b->bookData) {
+            b->left = node;
         }
+
         else {
-            y->right = node;
+            b->right = node;
         }
 
         if (node->parent == nullptr) {
@@ -607,40 +470,80 @@ public:
             return;
         }
 
-        insertFix(node);
+        _balanceInsert(node);
     }
 
-    RBTreeNode* getRoot() const {
-        return this->root;
-    }
+    void rotateLeft(RBTreeNode* cur) {
 
-    RBTreeNode* getNull() const {
-        return this->null;
-    }
+        RBTreeNode* b = cur->right;
+        cur->right = b->left;
 
-    void deleteNode(int key) {
-        deleteNodeHelper(this->root, key);
-    }
-
-    /*void printTree() {
-        if (root) {
-            print(this->root, "", true);
+        if (b->left != null) {
+            b->left->parent = cur;
         }
-    }*/
+
+        b->parent = cur->parent;
+
+        if (cur->parent == nullptr) {
+            this->root = b;
+        }
+
+        else if (cur == cur->parent->left) {
+            cur->parent->left = b;
+        }
+
+        else {
+            cur->parent->right = b;
+        }
+
+        b->left = cur;
+        cur->parent = b;
+    }
+
+    void rotateRight(RBTreeNode* cur) {
+        RBTreeNode* b = cur->left;
+
+        cur->left = b->right;
+
+        if (b->right != null) {
+            b->right->parent = cur;
+        }
+
+        b->parent = cur->parent;
+
+        if (cur->parent == nullptr) {
+            this->root = b;
+        }
+
+        else if (cur == cur->parent->right) {
+            cur->parent->right = b;
+        }
+
+        else {
+            cur->parent->left = b;
+        }
+
+        b->right = cur;
+        cur->parent = b;
+    }
+
+    void nodeDelete(int key) {
+        _nodeDelete(this->root, key);
+    }
 
     void printInRange(RBTreeNode* root, int l, int r, ofstream &os) {
         if (root == nullptr || root == null) return;
 
-        if (root->data.BookID > l) {
+        if (root->bookData.BookID > l) {
             printInRange(root->left, l, r, os);
         }
 
-        if (root->data.BookID >= l && root->data.BookID <= r) {
-            cout << root->data << endl;
-            os << root->data << endl;
+        if (root->bookData.BookID >= l && root->bookData.BookID <= r) {
+            cout << root->bookData << endl;
+            os << root->bookData << endl;
         }
 
-        if (root->data.BookID < r) {
+        if (root->bookData.BookID < r) {
             printInRange(root->right, l, r, os);
         }
     }
@@ -651,11 +554,11 @@ private:
     RBTree tree;
 public:
     void PrintBook(int bookID, ofstream &os) {
-        RBTreeNode* node = tree.searchTree(bookID);
+        RBTreeNode* node = tree.search(bookID);
 
         if (node != tree.getNull()) {
-            cout << node->data << endl;
-            os << node->data << endl;
+            cout << node->bookData << endl;
+            os << node->bookData << endl;
             return;
         }
 
@@ -680,26 +583,25 @@ public:
     }
 
     void BorrowBook(int patronID, int bookID, int patronPriority, ofstream &os) {
-        RBTreeNode* node = tree.searchTree(bookID);
+        RBTreeNode* node = tree.search(bookID);
 
         if (node) {
-            //cout << node->data.AvailabilityStatus << endl;
-            if (node->data.AvailabilityStatus == "Yes") {
-                node->data.AvailabilityStatus = "No";
-                node->data.BorrowedBy = patronID;
+            if (node->bookData.AvailabilityStatus == "Yes") {
+                node->bookData.AvailabilityStatus = "No";
+                node->bookData.BorrowedBy = patronID;
 
                 cout << "Book " << bookID << " Borrowed by Patron " << patronID << endl;
                 os << "Book " << bookID << " Borrowed by Patron " << patronID << endl;
             }
 
             else {
-                if (node->data.ReservationHeap.size() < 20) {
-                    auto now = std::chrono::system_clock::now();
+                if (node->bookData.ReservationHeap.size() < 20) {
+                    auto now = chrono::system_clock::now();
                     auto duration = now.time_since_epoch();
-                    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+                    auto millis = chrono::duration_cast<chrono::milliseconds>(duration).count();
                     cout << millis << endl;
 
-                    node->data.ReservationHeap.push({ patronPriority, millis, patronID});
+                    node->bookData.ReservationHeap.push({ patronPriority, millis, patronID});
                     cout << "Book " << bookID << " Reserved by Patron " << patronID << endl;
                     os << "Book " << bookID << " Reserved by Patron " << patronID << endl;
                 }
@@ -708,29 +610,29 @@ public:
     }
 
     void ReturnBook(int patronID, int bookID, ofstream &os) {
-        RBTreeNode* node = tree.searchTree(bookID);
+        RBTreeNode* node = tree.search(bookID);
 
         if (node) {
 
-            if (node->data.BorrowedBy != patronID) {
-                cout << "Book " << bookID << " Reserved by Patron " << node->data.BorrowedBy << endl;
-                os << "Book " << bookID << " Reserved by Patron " << node->data.BorrowedBy << endl;
+            if (node->bookData.BorrowedBy != patronID) {
+                cout << "Book " << bookID << " Reserved by Patron " << node->bookData.BorrowedBy << endl;
+                os << "Book " << bookID << " Reserved by Patron " << node->bookData.BorrowedBy << endl;
             }
 
 
             else {
-                node->data.AvailabilityStatus = "Yes";
-                node->data.BorrowedBy = -1;
+                node->bookData.AvailabilityStatus = "Yes";
+                node->bookData.BorrowedBy = -1;
 
                 cout << "Book " << bookID << " Returned by Patron " << patronID << endl;
                 os << "Book " << bookID << " Returned by Patron " << patronID << endl;
 
-                if (!node->data.ReservationHeap.empty()) {
-                    auto [patronPriority, timeOfReservation, nextPatronID] = node->data.ReservationHeap.top();
-                    node->data.ReservationHeap.pop();
+                if (!node->bookData.ReservationHeap.empty()) {
+                    auto [patronPriority, timeOfReservation, nextPatronID] = node->bookData.ReservationHeap.top();
+                    node->bookData.ReservationHeap.pop();
 
-                    node->data.AvailabilityStatus = "No";
-                    node->data.BorrowedBy = nextPatronID;
+                    node->bookData.AvailabilityStatus = "No";
+                    node->bookData.BorrowedBy = nextPatronID;
 
                     cout << endl << "Book " << bookID << " Allotted to Patron " << nextPatronID << endl;
                     os << endl << "Book " << bookID << " Allotted to Patron " << nextPatronID << endl;
@@ -740,10 +642,10 @@ public:
     }
 
     void DeleteBook(int bookID, ofstream &os) {
-        RBTreeNode* node = tree.searchTree(bookID);
+        RBTreeNode* node = tree.search(bookID);
 
         if (node) {
-            if (node->data.ReservationHeap.empty()) {
+            if (node->bookData.ReservationHeap.empty()) {
                 cout << "Book " << bookID << " is no longer available" << endl;
                 os << "Book " << bookID << " is no longer available" << endl;
             }
@@ -752,7 +654,7 @@ public:
                 cout << "Book " << bookID << " is no longer available. ";  
                 os << "Book " << bookID << " is no longer available. ";
                 
-                bool plural = node->data.ReservationHeap.size() > 1;
+                bool plural = node->bookData.ReservationHeap.size() > 1;
 
                 if (plural) {
                     cout << "Reservations made by Patrons ";
@@ -763,14 +665,14 @@ public:
                     cout << "Reservation made by Patron ";
                     os << "Reservation made by Patron ";
                 }
-                while (!node->data.ReservationHeap.empty()) {
-                    auto [patronPriority, timeOfReservation, nextPatronID] = node->data.ReservationHeap.top();
-                    node->data.ReservationHeap.pop();
+                while (!node->bookData.ReservationHeap.empty()) {
+                    auto [patronPriority, timeOfReservation, nextPatronID] = node->bookData.ReservationHeap.top();
+                    node->bookData.ReservationHeap.pop();
 
                     cout << nextPatronID;
                     os << nextPatronID;
 
-                    if (!node->data.ReservationHeap.empty()) {
+                    if (!node->bookData.ReservationHeap.empty()) {
                         cout << ", ";
                         os << ", ";
                     }
@@ -787,7 +689,7 @@ public:
                 
             }
 
-            tree.deleteNode(bookID);
+            tree.nodeDelete(bookID);
         }
     }
 
@@ -795,8 +697,8 @@ public:
         vector<RBTreeNode*> res = tree.findClosest(targetID);
 
         for (auto& node : res) {
-            cout << node->data << endl;
-            os << node->data << endl;
+            cout << node->bookData << endl;
+            os << node->bookData << endl;
         }
     }
 
@@ -805,15 +707,15 @@ public:
         os << "Colour Flip Count: " << tree.colorFlipCount << endl;
     }
 
-    static std::string trim(const std::string& str) {
-        std::string result = str;
+    static string trim(const string& str) {
+        string result = str;
 
-        result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
+        result.erase(result.begin(), find_if(result.begin(), result.end(), [](unsigned char ch) {
+            return !isspace(ch);
             }));
 
-        result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
-            return !std::isspace(ch);
+        result.erase(find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
+            return !isspace(ch);
             }).base(), result.end());
 
         return result;
@@ -858,12 +760,6 @@ public:
                         availabilityStatus.push_back(tokens[3][i]);
                     }
 
-                    /*cout << "before insert : "  << endl;
-                    cout << bookID << endl;
-                    cout << bookName << endl;
-                    cout << authorName << endl;
-                    cout << availabilityStatus << endl;*/
-
                     InsertBook(bookID, bookName, authorName, availabilityStatus, -1, os);
                 }
 
@@ -881,7 +777,6 @@ public:
                 if (tokens.size() == 1) {
                     int bookID = stoi(tokens[0]);
 
-                    //cout << bookID << endl;
                     PrintBook(bookID, os);
                 }
 
@@ -900,9 +795,6 @@ public:
                 if (tokens.size() == 2) {
                     int bookID1 = stoi(tokens[0]);
                     int bookID2 = stoi(tokens[1]);
-
-                    //cout << bookID1 << endl;
-                    //cout << bookID2 << endl;
 
                     PrintBooks(bookID1, bookID2, os);
                 }
@@ -924,10 +816,6 @@ public:
                     int bookID = stoi(tokens[1]);
                     int patronPriority = stoi(tokens[2]);
 
-                    //cout << patronID << endl;
-                    //cout << bookID << endl;
-                    //cout << patronPriority << endl;
-
                     BorrowBook(patronID, bookID, patronPriority, os);
                 }
 
@@ -947,10 +835,6 @@ public:
                     int patronID = stoi(tokens[0]);
                     int bookID = stoi(tokens[1]);
 
-
-                    //cout << patronID << endl;
-                    //cout << bookID << endl;
-
                     ReturnBook(patronID, bookID, os);
                 }
 
@@ -969,8 +853,6 @@ public:
                 if (tokens.size() == 1) {
                     int bookID = stoi(tokens[0]);
 
-                    //cout << bookID << endl;
-
                     DeleteBook(bookID, os);
                 }
 
@@ -988,8 +870,6 @@ public:
 
                 if (tokens.size() == 1) {
                     int targetID = stoi(tokens[0]);
-
-                    //cout << targetID << endl;
 
                     FindClosestBook(targetID, os);
                 }
@@ -1052,20 +932,9 @@ int main(int argc, char* argv[]) {
     string command;
     vector<string> operations;
 
-
-    /*int n;
-    cin >> n;
-    cin.get();
-
-    for (int i = 0; i < n; i++) {
-        getline(cin, command);
-        operations.push_back(command);
-    }*/
     while (getline(inputFile, command)) {
         operations.push_back(command);
     }
-
-    //ofstream outputFile("output_file.txt");
 
     library.ExecuteOperations(operations, outputFile);
 
