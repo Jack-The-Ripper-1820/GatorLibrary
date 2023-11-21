@@ -1,0 +1,34 @@
+
+BookID = 1
+Title = "Book1"
+Author = "Author1"
+Availability = "Yes"
+BorrowedBy = None
+Reservations = []
+
+
+Book 1 Borrowed by Patron 101
+
+
+Book 1 Reserved by Patron 102
+
+BookID = 1
+Title = "Book1"
+Author = "Author1"
+Availability = "No"
+BorrowedBy = 101
+Reservations = [102]
+
+BookID = 2
+Title = "Book2"
+Author = "Author2"
+Availability = "Yes"
+BorrowedBy = None
+Reservations = []
+
+
+Book 1 Returned by Patron 101
+
+Book 1 Allotted to Patron 102
+
+Program Terminated!!

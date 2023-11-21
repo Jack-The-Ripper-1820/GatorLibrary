@@ -109,20 +109,22 @@ public:
 
 class RBTree {
 private:
-    RBTreeNode *root, *null;
+    RBTreeNode *root, *null; // Root of the tree and the NULL node
 
+    // Searches for a node with the given key in the tree.
     RBTreeNode* _search(RBTreeNode* node, int key) {
         if (node == null || key == node->bookData.getKey()) {
             return node;
         }
 
-        if (key < node->bookData.getKey()) {
-            return _search(node->left, key);
+        if (key >= node->bookData.getKey()) {
+            return _search(node->right, key);
         }
 
-        return _search(node->right, key);
+        return _search(node->left, key);
     }
 
+    // Helper function for finding closest nodes to a given key.
     void _findClosestTraverse(vector<RBTreeNode*>& arr, RBTreeNode* root, const int& key, int& minDiff) {
         if (root == nullptr || root == null) {
             return;
@@ -143,6 +145,7 @@ private:
         _findClosestTraverse(arr, root->right, key, minDiff);
     }
 
+    // Returns nodes closest to the specified key.
     vector<RBTreeNode*> _findClosest(RBTreeNode* root, int key) {
         RBTreeNode* equalNode = _search(root, key);
         
@@ -162,11 +165,13 @@ private:
         return arr;
     }
 
+    // Assigns a new color to a node, updating the color flip count if necessary.
     void _assignColor(RBTreeNode* cur, int newColor) {
         if (cur->color != newColor) colorFlipCount++;
         cur->color = newColor;
     }
 
+    // Replaces one subtree as a child of its parent with another subtree.
     void _transplantRedBlack(RBTreeNode* a, RBTreeNode* b) {
         if (a->parent == nullptr) {
             root = b;
@@ -182,6 +187,7 @@ private:
         b->parent = a->parent;
     }
 
+    // Balances the tree after deletion of a node.
     void _balanceDelete(RBTreeNode* cur) {
         RBTreeNode* p;
         while (cur != root && cur->color == 0) {
@@ -258,6 +264,7 @@ private:
         _assignColor(cur, 0);
     }
 
+    // Deletes a node with the specified key from the tree.
     void _nodeDelete(RBTreeNode* node, int key) {
         RBTreeNode *delNode = null, *a, *b;
 
@@ -320,6 +327,7 @@ private:
         }
     }
 
+    // Balances the tree after insertion of a new node.
     void _balanceInsert(RBTreeNode* cur) {
         RBTreeNode *a;
 
@@ -378,12 +386,14 @@ private:
 
 
 public:
-    int colorFlipCount = 0;
+    int colorFlipCount = 0; // Counter for color flips in the tree
 
+    // Constructor for RBTree.
     RBTree() : null(new RBTreeNode(0)), colorFlipCount(0) {
         root = null;
     }
 
+    // Destructor helper function for post-order deletion.
     void postOrderDelete(RBTreeNode* node) {
         if (node == nullptr || node == null) {
             return;
@@ -393,37 +403,45 @@ public:
         delete node;
     }
 
+    // Destructor for RBTree.
     ~RBTree() {
         postOrderDelete(root);
         delete null;
     }
 
+    // Accessor for root.
     RBTreeNode* getRoot() const {
         return this->root;
     }
 
+    // Accessor for null node.
     RBTreeNode* getNull() const {
         return this->null;
     }
 
+    // Public interface to search for a node with a given key.
     RBTreeNode* search(int key) {
         return _search(root, key);
     }
 
+    // Finds the closest nodes to a given key.
     vector<RBTreeNode*> findClosest(int key) {
         return _findClosest(root, key);
     }
 
+    // Finds the node with the maximum key in the subtree rooted at a given node.
     RBTreeNode* findMax(RBTreeNode* node) {
         for (; node->right != null; node = node->right);
         return node;
     }
 
+    // Finds the node with the minimum key in the subtree rooted at a given node.
     RBTreeNode* findMin(RBTreeNode* node) {
         for (; node->left != null; node = node->left);
         return node;
     }
 
+    // Inserts a new node with the specified book data into the tree.
     void insert(const BookNode& bookData) {
         RBTreeNode* node = new RBTreeNode();
 
@@ -473,6 +491,7 @@ public:
         _balanceInsert(node);
     }
 
+    // Performs a left rotation on a given node.
     void rotateLeft(RBTreeNode* cur) {
 
         RBTreeNode* b = cur->right;
@@ -500,6 +519,7 @@ public:
         cur->parent = b;
     }
 
+    // Performs a right rotation on a given node.
     void rotateRight(RBTreeNode* cur) {
         RBTreeNode* b = cur->left;
 
@@ -527,10 +547,12 @@ public:
         cur->parent = b;
     }
 
+    // Public interface to delete a node with a given key.
     void nodeDelete(int key) {
         _nodeDelete(this->root, key);
     }
 
+    // Prints all nodes within a given range of keys.
     void printInRange(RBTreeNode* root, int l, int r, ofstream &os) {
         if (root == nullptr || root == null) return;
 
@@ -551,8 +573,11 @@ public:
 
 class GatorLibrary {
 private:
-    RBTree tree;
+    RBTree tree; // Tree structure to store BookNodes
 public:
+
+    // Prints details of a book with the given ID.
+    // Outputs to both console and file.
     void PrintBook(int bookID, ofstream &os) {
         RBTreeNode* node = tree.search(bookID);
 
@@ -566,10 +591,12 @@ public:
         os << "Book " << bookID << " not found in the Library" << endl;
     }
 
+    // Prints details of books within a specified ID range.
     void PrintBooks(int bookID1, int bookID2, ofstream &os) {
         tree.printInRange(tree.getRoot(), bookID1, bookID2, os);
     }
 
+    // Inserts a new book into the library.
     void InsertBook(int bookID, string bookName, string authorName, string availabilityStatus, int borrowedBy, ofstream &os) {
         BookNode book(
             bookID,
@@ -582,6 +609,7 @@ public:
         tree.insert(book);
     }
 
+    // Handles book borrowing logic as described in the problem.
     void BorrowBook(int patronID, int bookID, int patronPriority, ofstream &os) {
         RBTreeNode* node = tree.search(bookID);
 
@@ -609,6 +637,7 @@ public:
         }
     }
 
+    // Manages the returning of a borrowed book.
     void ReturnBook(int patronID, int bookID, ofstream &os) {
         RBTreeNode* node = tree.search(bookID);
 
@@ -641,6 +670,7 @@ public:
         }
     }
 
+    // Deletes a book from the library.
     void DeleteBook(int bookID, ofstream &os) {
         RBTreeNode* node = tree.search(bookID);
 
@@ -693,6 +723,7 @@ public:
         }
     }
 
+    // Finds the closest book to a given ID.
     void FindClosestBook(int targetID, ofstream &os) {
         vector<RBTreeNode*> res = tree.findClosest(targetID);
 
@@ -702,11 +733,13 @@ public:
         }
     }
 
+    // Prints the number of color flips in the RBTree.
     void ColorFlipCount(ofstream &os) {
         cout << "Colour Flip Count: " << tree.colorFlipCount << endl;
         os << "Colour Flip Count: " << tree.colorFlipCount << endl;
     }
 
+    // Trims whitespace from a string.
     static string trim(const string& str) {
         string result = str;
 
@@ -721,6 +754,7 @@ public:
         return result;
     }
 
+    // Tokenizes a string based on comma separation.
     static vector<string> tokenize(istringstream& ss) {
         string token;
         vector<string> tokens;
@@ -732,8 +766,8 @@ public:
         return tokens;
     }
 
-    void  ExecuteOperations(const vector<string>& operations, ofstream& os)
-    {
+    // Executes the series of operations read from the input file.
+    void  ExecuteOperations(const vector<string>& operations, ofstream& os) {
         for (string operation : operations) {
             size_t n = operation.size();
             string command;
@@ -907,38 +941,40 @@ public:
 };
 
 int main(int argc, char* argv[]) {
+    // Check if the correct number of arguments is passed (expecting 2 arguments: the program name and input file name)
     if (argc != 2) {
-        cerr << "Usage: ./gatorLibrary <file_name>" << endl;
-        return 1;
+        cerr << "Usage: ./gatorLibrary <file_name>" << endl; // Error message for incorrect usage
+        return 1; // Return non-zero value to indicate error
     }
 
-    string inputFileName = argv[1];
-    ifstream inputFile(inputFileName);
+    string inputFileName = argv[1]; // Store the input file name from command line arguments
+    ifstream inputFile(inputFileName); // Open the input file stream
 
+    // Check if the input file is successfully opened
     if (!inputFile.is_open()) {
-        cerr << "Error opening input file. " << inputFileName << endl;
-        return 1;
+        cerr << "Error opening input file. " << inputFileName << endl; // Error message if file opening fails
+        return 1; // Return non-zero value to indicate error
     }
 
-    ofstream outputFile(inputFileName + "_output_file.txt");
+    ofstream outputFile(inputFileName + "_output_file.txt"); // Create and open the output file stream
 
-    if(!outputFile.is_open()) {
-        cerr << "Error opening output file." << endl;
-        return 1;
+    // Check if the output file is successfully opened
+    if (!outputFile.is_open()) {
+        cerr << "Error opening output file." << endl; // Error message if file opening fails
+        return 1; // Return non-zero value to indicate error
     }
 
-    GatorLibrary library;
+    GatorLibrary library; // Create an instance of GatorLibrary
 
-    string command;
-    vector<string> operations;
+    string command; // Variable to store each line/command from the input file
+    vector<string> operations; // Vector to store all operations
 
+    // Read each line from the input file and add to operations vector
     while (getline(inputFile, command)) {
         operations.push_back(command);
     }
 
-    library.ExecuteOperations(operations, outputFile);
+    library.ExecuteOperations(operations, outputFile); // Execute all operations read from the file
 
-    
-
-    return 0;
+    return 0; // Return 0 to indicate successful execution
 }

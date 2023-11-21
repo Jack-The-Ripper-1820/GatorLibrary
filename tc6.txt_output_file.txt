@@ -1,0 +1,32 @@
+
+
+
+
+
+Book 2 Borrowed by Patron 102
+
+Book 3 Borrowed by Patron 103
+
+
+
+
+Book 4 Borrowed by Patron 104
+
+Book 5 Borrowed by Patron 105
+
+Book 2 Returned by Patron 102
+
+Book 3 Returned by Patron 103
+
+Book 4 Returned by Patron 104
+
+Book 5 Returned by Patron 105
+
+Book 6 Borrowed by Patron 101
+
+Book 7 Borrowed by Patron 102
+
+Book 8 Borrowed by Patron 103
+
+
+
