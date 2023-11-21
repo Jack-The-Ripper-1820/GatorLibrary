@@ -1,0 +1,14 @@
+
+Book 1 Borrowed by Patron 101
+
+Book 1 Reserved by Patron 102
+
+Book 1 Reserved by Patron 106
+
+Book 1 Reserved by Patron 505
+
+Book 1 Returned by Patron 101
+
+Book 1 Allotted to Patron 102
+
+Program Terminated!!

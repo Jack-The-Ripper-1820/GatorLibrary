@@ -5,10 +5,15 @@
 #include <string>
 #include <ctime>
 #include <queue>
-#include <variant>
 #include <limits>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <tuple>
+#include <variant>
+#include <chrono>
+
+
 
 #define HeapNode tuple<int, double, int>
 #define WAIT_LIST_MAX_SIZE 20
@@ -25,7 +30,7 @@ public:
     int BorrowedBy;
     priority_queue<HeapNode, vector<HeapNode>, greater<HeapNode>> ReservationHeap;
 
-    BookNode() : BookID(-1), BookName(), AuthorName(), AvailabilityStatus(), BorrowedBy(-1) {
+    BookNode() : BookID(0), BookName(), AuthorName(), AvailabilityStatus("Yes"), BorrowedBy(-1) {
 
     }
 
@@ -92,7 +97,7 @@ public:
     RBTreeNode * parent, * left, * right;
     int color;
 
-    RBTreeNode() : parent(nullptr), left(nullptr), right(nullptr), color(0), data() {
+    RBTreeNode() : data(), parent(nullptr), left(nullptr), right(nullptr), color(0) {
     
     }
 
@@ -112,37 +117,37 @@ private:
     RBTreeNode* root;
     RBTreeNode* null;
 
-    void initNullNode(RBTreeNode* node, RBTreeNode* parent) {
-        node = new RBTreeNode(-1);
+    /*void initNullNode(RBTreeNode* node, RBTreeNode* parent) {
+        node = new RBTreeNode(0);
         node->parent = parent;
-    }
+    }*/
 
-    void printPreOrder(RBTreeNode* node) {
-        if (node && node != null) {
+    /*void printPreOrder(RBTreeNode* node) {
+        if (node != null) {
             cout << node->data << endl;
             printPreOrder(node->left);
             printPreOrder(node->right);
         }
-    }
+    }*/
 
-    void printInOrder(RBTreeNode* node) {
-        if (node && node != null) {
+    /*void printInOrder(RBTreeNode* node) {
+        if (node != null) {
             printInOrder(node->left);
             cout << node->data << endl;
             printInOrder(node->right);
         }
-    }
+    }*/
 
-    void printPostOrder(RBTreeNode* node) {
-        if (node && node != null) {
+    /*void printPostOrder(RBTreeNode* node) {
+        if (node != null) {
             printPostOrder(node->left);
             printPostOrder(node->right);
             cout << node->data << endl;
         }
-    }
+    }*/
 
     RBTreeNode* searchTreeHelper(RBTreeNode* node, int key) {
-        if (node == nullptr || node == null || key == node->data.getKey()) {
+        if (node == null || key == node->data.getKey()) {
             return node;
         }
 
@@ -198,7 +203,6 @@ private:
         cur->color = newColor;
     }
 
-    // For balancing the tree after deletion
     void deleteFix(RBTreeNode* x) {
         RBTreeNode* s;
         while (x != root && x->color == 0) {
@@ -207,7 +211,8 @@ private:
                 if (s->color == 1) {
                     //s->color = 0;
                     assignColor(s, 0);
-                    x->parent->color = 1;
+                    //x->parent->color = 1;
+                    assignColor(x->parent, 1);
                     leftRotate(x->parent);
                     s = x->parent->right;
                 }
@@ -293,8 +298,8 @@ private:
 
     void deleteNodeHelper(RBTreeNode* node, int key) {
         RBTreeNode* z = null;
-        RBTreeNode* x, *y;
-        while (node && node != null) {
+        RBTreeNode *x, *y;
+        while (node != null) {
             if (node->data.getKey() == key) {
                 z = node;
             }
@@ -307,7 +312,7 @@ private:
             }
         }
 
-        if (z == nullptr || z == null) {
+        if (z == null) {
             cout << "Key not found in the tree" << endl;
             return;
         }
@@ -349,9 +354,8 @@ private:
         }
     }
 
-    // For balancing the tree after insertion
     void insertFix(RBTreeNode* k) {
-        RBTreeNode* u = nullptr;
+        RBTreeNode *u;
         while (k->parent->color == 1) {
             if (k->parent == k->parent->parent->right) {
                 u = k->parent->parent->left;
@@ -408,8 +412,8 @@ private:
         assignColor(root, 0);
     }
 
-    void print(RBTreeNode* root, string indent, bool last) {
-        if (root && root != null) {
+    /*void print(RBTreeNode* root, string indent, bool last) {
+        if (root != null) {
             cout << indent;
             if (last) {
                 cout << "R----";
@@ -425,7 +429,7 @@ private:
             print(root->left, indent, false);
             print(root->right, indent, true);
         }
-    }
+    }*/
 
 
 public:
@@ -449,29 +453,29 @@ public:
         delete null;
     }
 
-    void preorder() {
+    /*void preorder() {
         printPreOrder(this->root);
-    }
+    }*/
 
-    void inorder() {
+    /*void inorder() {
         printInOrder(this->root);
-    }
+    }*/
 
-    void postorder() {
+    /*void postorder() {
         printPostOrder(this->root);
-    }
+    }*/
 
-    void preorder(RBTreeNode* root) {
+    /*void preorder(RBTreeNode* root) {
         printPreOrder(root);
-    }
+    }*/
 
-    void inorder(RBTreeNode* root) {
+    /*void inorder(RBTreeNode* root) {
         printInOrder(root);
-    }
+    }*/
 
-    void postorder(RBTreeNode* root) {
+    /*void postorder(RBTreeNode* root) {
         printPostOrder(root);
-    }
+    }*/
 
     RBTreeNode* searchTree(int key) {
         return searchTreeHelper(root, key);
@@ -562,7 +566,6 @@ public:
         x->parent = y;
     }
 
-    // Inserting a node
     void insert(const BookNode& data) {
         RBTreeNode* node = new RBTreeNode();
         node->parent = nullptr;
@@ -607,11 +610,11 @@ public:
         insertFix(node);
     }
 
-    RBTreeNode* getRoot() {
+    RBTreeNode* getRoot() const {
         return this->root;
     }
 
-    RBTreeNode* getNull() {
+    RBTreeNode* getNull() const {
         return this->null;
     }
 
@@ -619,25 +622,26 @@ public:
         deleteNodeHelper(this->root, key);
     }
 
-    void printTree() {
+    /*void printTree() {
         if (root) {
             print(this->root, "", true);
         }
-    }
+    }*/
 
-    void printInRange(RBTreeNode* root, int l, int r) {
+    void printInRange(RBTreeNode* root, int l, int r, ofstream &os) {
         if (root == nullptr || root == null) return;
 
         if (root->data.BookID > l) {
-            printInRange(root->left, l, r);
+            printInRange(root->left, l, r, os);
         }
 
         if (root->data.BookID >= l && root->data.BookID <= r) {
             cout << root->data << endl;
+            os << root->data << endl;
         }
 
         if (root->data.BookID < r) {
-            printInRange(root->right, l, r);
+            printInRange(root->right, l, r, os);
         }
     }
 };
@@ -646,22 +650,24 @@ class GatorLibrary {
 private:
     RBTree tree;
 public:
-    void PrintBook(int bookID) {
+    void PrintBook(int bookID, ofstream &os) {
         RBTreeNode* node = tree.searchTree(bookID);
 
-        if (node) {
+        if (node != tree.getNull()) {
             cout << node->data << endl;
+            os << node->data << endl;
             return;
         }
 
         cout << "Book " << bookID << " not found in the Library" << endl;
+        os << "Book " << bookID << " not found in the Library" << endl;
     }
 
-    void PrintBooks(int bookID1, int bookID2) {
-        tree.printInRange(tree.getRoot(), bookID1, bookID2);
+    void PrintBooks(int bookID1, int bookID2, ofstream &os) {
+        tree.printInRange(tree.getRoot(), bookID1, bookID2, os);
     }
 
-    void InsertBook(int bookID, string bookName, string authorName, string availabilityStatus, int borrowedBy) {
+    void InsertBook(int bookID, string bookName, string authorName, string availabilityStatus, int borrowedBy, ofstream &os) {
         BookNode book(
             bookID,
             bookName,
@@ -673,33 +679,42 @@ public:
         tree.insert(book);
     }
 
-    void BorrowBook(int patronID, int bookID, int patronPriority) {
+    void BorrowBook(int patronID, int bookID, int patronPriority, ofstream &os) {
         RBTreeNode* node = tree.searchTree(bookID);
 
         if (node) {
+            //cout << node->data.AvailabilityStatus << endl;
             if (node->data.AvailabilityStatus == "Yes") {
                 node->data.AvailabilityStatus = "No";
                 node->data.BorrowedBy = patronID;
 
                 cout << "Book " << bookID << " Borrowed by Patron " << patronID << endl;
+                os << "Book " << bookID << " Borrowed by Patron " << patronID << endl;
             }
 
             else {
                 if (node->data.ReservationHeap.size() < 20) {
-                    node->data.ReservationHeap.push({ patronPriority, time(0), patronID });
+                    auto now = std::chrono::system_clock::now();
+                    auto duration = now.time_since_epoch();
+                    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+                    cout << millis << endl;
+
+                    node->data.ReservationHeap.push({ patronPriority, millis, patronID});
                     cout << "Book " << bookID << " Reserved by Patron " << patronID << endl;
+                    os << "Book " << bookID << " Reserved by Patron " << patronID << endl;
                 }
             }
         }
     }
 
-    void ReturnBook(int patronID, int bookID) {
+    void ReturnBook(int patronID, int bookID, ofstream &os) {
         RBTreeNode* node = tree.searchTree(bookID);
 
         if (node) {
 
             if (node->data.BorrowedBy != patronID) {
                 cout << "Book " << bookID << " Reserved by Patron " << node->data.BorrowedBy << endl;
+                os << "Book " << bookID << " Reserved by Patron " << node->data.BorrowedBy << endl;
             }
 
 
@@ -707,7 +722,8 @@ public:
                 node->data.AvailabilityStatus = "Yes";
                 node->data.BorrowedBy = -1;
 
-                cout << "Book " << bookID << "  Returned by Patron " << patronID << endl;
+                cout << "Book " << bookID << " Returned by Patron " << patronID << endl;
+                os << "Book " << bookID << " Returned by Patron " << patronID << endl;
 
                 if (!node->data.ReservationHeap.empty()) {
                     auto [patronPriority, timeOfReservation, nextPatronID] = node->data.ReservationHeap.top();
@@ -717,52 +733,90 @@ public:
                     node->data.BorrowedBy = nextPatronID;
 
                     cout << endl << "Book " << bookID << " Allotted to Patron " << nextPatronID << endl;
+                    os << endl << "Book " << bookID << " Allotted to Patron " << nextPatronID << endl;
                 }
             }
         }
     }
 
-    void DeleteBook(int bookID) {
+    void DeleteBook(int bookID, ofstream &os) {
         RBTreeNode* node = tree.searchTree(bookID);
 
         if (node) {
             if (node->data.ReservationHeap.empty()) {
-                cout << "Book " << bookID << " is no longer available." << endl;
+                cout << "Book " << bookID << " is no longer available" << endl;
+                os << "Book " << bookID << " is no longer available" << endl;
             }
 
             else {
-                cout << "Book " << bookID << " is no longer available. Reservations made by Patrons ";  
+                cout << "Book " << bookID << " is no longer available. ";  
+                os << "Book " << bookID << " is no longer available. ";
                 
+                bool plural = node->data.ReservationHeap.size() > 1;
+
+                if (plural) {
+                    cout << "Reservations made by Patrons ";
+                    os << "Reservations made by Patrons ";
+                }
+
+                else {
+                    cout << "Reservation made by Patron ";
+                    os << "Reservation made by Patron ";
+                }
                 while (!node->data.ReservationHeap.empty()) {
                     auto [patronPriority, timeOfReservation, nextPatronID] = node->data.ReservationHeap.top();
                     node->data.ReservationHeap.pop();
 
                     cout << nextPatronID;
+                    os << nextPatronID;
 
-                    if (!node->data.ReservationHeap.empty()) cout << ", ";
+                    if (!node->data.ReservationHeap.empty()) {
+                        cout << ", ";
+                        os << ", ";
+                    }
+                }
+                if (plural) {
+                    cout << " have been cancelled!" << endl;
+                    os << " have been cancelled!" << endl;
                 }
 
-                cout << " have been cancelled!" << endl;
+                else {
+                    cout << " has been cancelled!" << endl;
+                    os << " has been cancelled!" << endl;
+                }
+                
             }
 
             tree.deleteNode(bookID);
         }
     }
 
-    void FindClosestBook(int targetID) {
-        //cout << "Inside Find Closest Book" << endl;
+    void FindClosestBook(int targetID, ofstream &os) {
         vector<RBTreeNode*> res = tree.findClosest(targetID);
-        //cout << res.size() << endl;
 
         for (auto& node : res) {
             cout << node->data << endl;
+            os << node->data << endl;
         }
-
-        //cout << "Exiting Find Closest Book" << endl;
     }
 
-    void ColorFlipCount() {
+    void ColorFlipCount(ofstream &os) {
         cout << "Colour Flip Count: " << tree.colorFlipCount << endl;
+        os << "Colour Flip Count: " << tree.colorFlipCount << endl;
+    }
+
+    static std::string trim(const std::string& str) {
+        std::string result = str;
+
+        result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+            }));
+
+        result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+            }).base(), result.end());
+
+        return result;
     }
 
     static vector<string> tokenize(istringstream& ss) {
@@ -770,24 +824,22 @@ public:
         vector<string> tokens;
 
         while (getline(ss, token, ',')) {
-            tokens.push_back(token);
+            tokens.push_back(trim(token));
         }
 
         return tokens;
     }
 
-    void  ExecuteOperations(const vector<string>& operations)
+    void  ExecuteOperations(const vector<string>& operations, ofstream& os)
     {
         for (string operation : operations) {
-            int n = operation.size();
+            size_t n = operation.size();
             string command;
-            int i = 0;
+            size_t i = 0;
 
             for (; i < n && operation[i] != '('; i++) {
                 command.push_back(operation[i]);
             }
-
-            //cout << endl << command << endl;
 
             if (command == "InsertBook") {
 
@@ -798,11 +850,21 @@ public:
 
                 if (tokens.size() >= 4) {
                     int bookID = stoi(tokens[0]);
-                    string bookName = tokens[1].substr(2, tokens[1].size() - 3);
-                    string authorName = tokens[2].substr(2, tokens[2].size() - 3);
-                    string availabilityStatus = tokens[3].substr(2, tokens[3].size() - 3);
+                    string bookName = tokens[1].substr(1, tokens[1].size() - 2);
+                    string authorName = tokens[2].substr(1, tokens[2].size() - 2);
+                    string availabilityStatus; // = tokens[3].substr(1, tokens[3].size() - 2);
+                    
+                    for (size_t i = 1; i < tokens[3].size() && tokens[3][i] != '"'; i++) {
+                        availabilityStatus.push_back(tokens[3][i]);
+                    }
 
-                    InsertBook(bookID, bookName, authorName, availabilityStatus, -1);
+                    /*cout << "before insert : "  << endl;
+                    cout << bookID << endl;
+                    cout << bookName << endl;
+                    cout << authorName << endl;
+                    cout << availabilityStatus << endl;*/
+
+                    InsertBook(bookID, bookName, authorName, availabilityStatus, -1, os);
                 }
 
                 else {
@@ -820,7 +882,7 @@ public:
                     int bookID = stoi(tokens[0]);
 
                     //cout << bookID << endl;
-                    PrintBook(bookID);
+                    PrintBook(bookID, os);
                 }
 
                 else {
@@ -842,7 +904,7 @@ public:
                     //cout << bookID1 << endl;
                     //cout << bookID2 << endl;
 
-                    PrintBooks(bookID1, bookID2);
+                    PrintBooks(bookID1, bookID2, os);
                 }
 
                 else {
@@ -866,7 +928,7 @@ public:
                     //cout << bookID << endl;
                     //cout << patronPriority << endl;
 
-                    BorrowBook(patronID, bookID, patronPriority);
+                    BorrowBook(patronID, bookID, patronPriority, os);
                 }
 
                 else {
@@ -889,7 +951,7 @@ public:
                     //cout << patronID << endl;
                     //cout << bookID << endl;
 
-                    ReturnBook(patronID, bookID);
+                    ReturnBook(patronID, bookID, os);
                 }
 
                 else {
@@ -909,7 +971,7 @@ public:
 
                     //cout << bookID << endl;
 
-                    DeleteBook(bookID);
+                    DeleteBook(bookID, os);
                 }
 
                 else {
@@ -929,7 +991,7 @@ public:
 
                     //cout << targetID << endl;
 
-                    FindClosestBook(targetID);
+                    FindClosestBook(targetID, os);
                 }
 
                 else {
@@ -944,11 +1006,12 @@ public:
 
                 vector<string> tokens = tokenize(paramsStream);;
 
-                ColorFlipCount();
+                ColorFlipCount(os);
             }
 
             else if (command == "Quit") {
                 cout << "Program Terminated!!" << endl;
+                os << "Program Terminated!!" << endl;
                 exit(1);
             }
 
@@ -958,6 +1021,7 @@ public:
             }
 
             cout << endl;
+            os << endl;
         }
     }
 };
@@ -970,10 +1034,16 @@ int main(int argc, char* argv[]) {
 
     string inputFileName = argv[1];
     ifstream inputFile(inputFileName);
+
+    if (!inputFile.is_open()) {
+        cerr << "Error opening input file. " << inputFileName << endl;
+        return 1;
+    }
+
     ofstream outputFile(inputFileName + "_output_file.txt");
 
-    if (!inputFile.is_open() || !outputFile.is_open()) {
-        cerr << "Error opening files." << endl;
+    if(!outputFile.is_open()) {
+        cerr << "Error opening output file." << endl;
         return 1;
     }
 
@@ -982,11 +1052,24 @@ int main(int argc, char* argv[]) {
     string command;
     vector<string> operations;
 
-    while (std::getline(inputFile, command)) {
+
+    /*int n;
+    cin >> n;
+    cin.get();
+
+    for (int i = 0; i < n; i++) {
+        getline(cin, command);
+        operations.push_back(command);
+    }*/
+    while (getline(inputFile, command)) {
         operations.push_back(command);
     }
 
-    library.ExecuteOperations(operations);
+    //ofstream outputFile("output_file.txt");
+
+    library.ExecuteOperations(operations, outputFile);
+
+    
 
     return 0;
 }

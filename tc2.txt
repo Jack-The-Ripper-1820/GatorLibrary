@@ -1,0 +1,7 @@
+InsertBook(1, "Book1", "Author1", "Yes")
+BorrowBook(101, 1, 1)
+BorrowBook(102, 1, 2)
+BorrowBook(106, 1, 4)
+BorrowBook(505, 1, 5)
+ReturnBook(101, 1)
+Quit()
