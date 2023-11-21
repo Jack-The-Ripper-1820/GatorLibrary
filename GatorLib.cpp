@@ -599,7 +599,7 @@ public:
                     auto now = chrono::system_clock::now();
                     auto duration = now.time_since_epoch();
                     auto millis = chrono::duration_cast<chrono::milliseconds>(duration).count();
-                    cout << millis << endl;
+                    //cout << millis << endl;
 
                     node->bookData.ReservationHeap.push({ patronPriority, millis, patronID});
                     cout << "Book " << bookID << " Reserved by Patron " << patronID << endl;
